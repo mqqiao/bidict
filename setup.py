@@ -28,6 +28,8 @@ tests_require = [
     'pytest-benchmark==3.1.0a1',
     'pytest-cov==2.4.0',
     'Sphinx==1.5.0',
+    'sortedcollections==0.4.2',
+    'sortedcontainers==1.5.5',
 ]
 
 setup(

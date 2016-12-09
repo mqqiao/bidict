@@ -1,11 +1,11 @@
 """Implements :class:`bidict.frozenbidict`."""
 
 from .compat import viewitems
-from ._common import BidirectionalMapping, _missing
+from ._common import BidictBase, _missing
 from collections import Hashable
 
 
-class frozenbidict(BidirectionalMapping, Hashable):
+class frozenbidict(BidictBase, Hashable):
     """Immutable, hashable bidict type."""
 
     def __hash__(self):

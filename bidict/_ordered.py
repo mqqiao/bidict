@@ -1,11 +1,11 @@
 """Implements :class:`bidict.orderedbidict` and friends."""
 
 from ._bidict import bidict
-from ._common import BidirectionalMapping, _marker, _missing
+from ._common import BidirectionalMapping, Mapping, _marker, _missing, _check_methods
 from ._frozen import frozenbidict
 from ._loose import loosebidict
 from .compat import PY2, iteritems, izip
-from collections import ItemsView, Mapping, OrderedDict
+from collections import ItemsView
 
 
 _PRV = 1
@@ -29,15 +29,78 @@ def _make_iter(reverse=False, name='__iter__', doctmpl='Like :meth:`collections.
     return _iter
 
 
-class OrderedBidirectionalMapping(BidirectionalMapping):
-    """Base class for ordered bidirectional map types."""
+# On pypy, hasattr(dict, '__reversed__') is True,
+# so with the OrderedMapping.__subclasshook__ below,
+# issubclass(dict, OrderedMapping) is True,
+# and therefore the OrderedMapping.__eq__ implementation
+# will do an order-sensitive comparison with a regular dict
+# unless we detect this!
+_DICT_LACKS_REVERSED = not hasattr(dict, '__reversed__')
+
+
+class OrderedMapping(Mapping):
+    """The OrderedMapping interface missing from collections.abc."""
+
+    __slots__ = ()
+
+    def __eq__(self, other):
+        if not isinstance(other, Mapping):
+            return NotImplemented
+        if len(self) != len(other):
+            return False
+        if isinstance(other, OrderedMapping) and (
+                _DICT_LACKS_REVERSED or other.__class__ is not dict):
+            return all(i == j for (i, j) in izip(iteritems(self), iteritems(other)))
+        return all(self.get(k, _missing) == v for (k, v) in iteritems(other))
+
+    _subclasshook_methods = {
+        '__reversed__',
+        'keys', 'items', 'values', 'get', '__getitem__',
+        '__contains__', '__iter__', '__len__', '__eq__',
+    }
+
+    @classmethod
+    def __subclasshook__(cls, C):
+        # ideally this would return True for any C that is both Ordered
+        # and a Mapping. Unfortunately collections.abc doesn't provide an
+        # `Ordered` ABC. The closest it provides is Reversible, which implies
+        # more than just ordered (a singly-linked list is ordered but not
+        # reversible). Settle for checking for __reversed__ here.
+        # Any non-Reversible OrderedMappings we miss will just have to call
+        # OrderedMapping.register to register themselves as subclasses.
+        # But at least this catches collections.OrderedDict automatically.
+        if cls is OrderedMapping:
+            return _check_methods(C, *OrderedMapping._subclasshook_methods)
+        return NotImplemented
+
+
+class OrderedBidirectionalMapping(OrderedMapping, BidirectionalMapping):
+    """Abstract base class for ordered bidirectional mappings."""
+
+    __slots__ = ()
+
+    _subclasshook_methods = (
+        BidirectionalMapping._subclasshook_methods | OrderedMapping._subclasshook_methods
+    )
+
+    @classmethod
+    def __subclasshook__(cls, C):
+        # Same comment as in OrderedMapping.__subclasshook__ applies here.
+        if cls is OrderedBidirectionalMapping:
+            return _check_methods(C, *OrderedBidirectionalMapping._subclasshook_methods)
+        return NotImplemented
+
+
+class OrderedBidictBase(OrderedBidirectionalMapping):
+    """Base class for orderedbidict."""
 
     def __init__(self, *args, **kw):
         """Base impl. You probably want :func:`orderedbidict.__init__` instead."""
+        self._isinv = getattr(args[0], '_isinv', False) if args else False
         self._end = []  # circular doubly-linked list of [{key: val, val: key}, prv, nxt] nodes
         self._init_end()
-        self._fwd = {}  # key -> node
-        self._inv = {}  # val -> node
+        self._fwd = {}  # key -> node. _fwd_class ignored.
+        self._inv = {}  # val -> node. _inv_class ignored.
         self._init_inv()
         if args or kw:
             self._update(True, self._on_dup_key, self._on_dup_val, self._on_dup_kv, *args, **kw)
@@ -47,7 +110,7 @@ class OrderedBidirectionalMapping(BidirectionalMapping):
         end += [_END, end, end]  # sentinel node for doubly linked list
 
     def _init_inv(self):
-        super(OrderedBidirectionalMapping, self)._init_inv()
+        super(OrderedBidictBase, self)._init_inv()
         self.inv._end = self._end
 
     def copy(self):
@@ -57,7 +120,7 @@ class OrderedBidirectionalMapping(BidirectionalMapping):
     __copy__ = copy
 
     def _clear(self):
-        super(OrderedBidirectionalMapping, self)._clear()
+        super(OrderedBidictBase, self)._clear()
         del self._end[:]
         self._init_end()
 
@@ -169,28 +232,18 @@ class OrderedBidirectionalMapping(BidirectionalMapping):
             fwd[oldkey] = nodeinv
             assert inv[val] is nodeinv
 
-    def __eq__(self, other):
-        if not isinstance(other, Mapping) or len(self) != len(other):
-            return False
-        if isinstance(other, (OrderedBidirectionalMapping, OrderedDict)):
-            return all(i == j for (i, j) in izip(iteritems(self), iteritems(other)))
-        return all(self.get(k, _missing) == v for (k, v) in iteritems(other))
-
-    def __repr__(self):
-        inner = ', '.join('(%r, %r)' % (k, v) for (k, v) in iteritems(self))
-        inner = '[%s]' % inner if inner else ''
-        return '%s(%s)' % (self.__class__.__name__, inner)
-
     __iter__ = _make_iter()
     __reversed__ = _make_iter(reverse=True, name='__reversed__')
     if PY2:  # pragma: no cover
+        # Override BidirectionalMapping.viewitems which just proxies to _fwd
+        # (since our _fwd's values are nodes, not bare values).
         def viewitems(self):
             """Like :meth:`collections.OrderedDict.viewitems`."""
             return ItemsView(self)
 
 
-class orderedbidict(OrderedBidirectionalMapping, bidict):
-    """Mutable, ordered bidict type."""
+class orderedbidict(OrderedBidictBase, bidict):
+    """Mutable bidict type that maintains items in insertion order."""
 
     def popitem(self, last=True):
         """Like :meth:`collections.OrderedDict.popitem`."""
@@ -219,9 +272,9 @@ class orderedbidict(OrderedBidirectionalMapping, bidict):
             end[_NXT] = fst[_PRV] = node
 
 
-class frozenorderedbidict(OrderedBidirectionalMapping, frozenbidict):
-    """Immutable, hashable :class:`bidict.OrderedBidirectionalMapping` type."""
+class frozenorderedbidict(OrderedBidictBase, frozenbidict):
+    """Immutable, hashable :class:`bidict.orderedbidict` type."""
 
 
 class looseorderedbidict(orderedbidict, loosebidict):
-    """Mutable, ordered bidict with *OVERWRITE* duplication behaviors by default."""
+    """Mutable orderedbidict with *OVERWRITE* duplication behaviors by default."""

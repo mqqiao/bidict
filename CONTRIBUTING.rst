@@ -106,9 +106,17 @@ Donation and Other Ways to Contribute
 
 Besides filing issues and pull requests, there are other ways to contribute.
 
-.. image:: https://img.shields.io/badge/Paypal-Buy%20a%20Drink-blue.svg
-  :target: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=jab%40math%2ebrown%2eedu&lc=US&item_name=Buy%20a%20drink%20for%20jab&button_subtype=services&currency_code=USD&bn=PP%2dBuyNowBF%3aPaypal%2dBuy%2520a%2520Drink%2dblue%2esvg%3aNonHosted
-  :alt: PayPal - Buy a drink
+.. image:: https://img.shields.io/badge/Gumroad-Support%20bidict-orange.svg
+  :target: https://gumroad.com/l/bidict
+  :alt: Gumroad - Support bidict
+
+.. image:: https://img.shields.io/badge/Bountysource-Support%20bidict-brightgreen.svg
+  :target: https://www.bountysource.com/teams/bidict
+  :alt: Bountysource - Support bidict
+
+.. image:: https://img.shields.io/badge/PayPal-Support%20bidict-blue.svg
+  :target: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=jab%40math%2ebrown%2eedu&lc=US&item_name=Support%20bidict&button_subtype=services&currency_code=USD&bn=PP%2dBuyNowBF%3aPaypal%2dBuy%2520a%2520Drink%2dblue%2esvg%3aNonHosted
+  :alt: PayPal - Support bidict
 
 - If you read the code and learned something new,
   let us know and it'll give us the warm fuzzies.
@@ -126,10 +134,6 @@ Besides filing issues and pull requests, there are other ways to contribute.
 .. image:: ./_static/support-on-gumroad.png
   :target: https://gumroad.com/l/bidict
   :alt: Support bidict
-
-.. Comment out bountysource; went down on 2016/12/6 for too long.
-  You can also use `Bountysource <https://www.bountysource.com/teams/jab>`_
-  to sponsor a new feature/bugfix or make a general contribution.
 
 Code of Conduct
 ---------------

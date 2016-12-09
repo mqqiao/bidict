@@ -13,6 +13,8 @@ bidict
     :special-members:
     :exclude-members: __dict__,__weakref__
 
+.. autoclass:: bidict._common.BidictBase
+
 bidict.util
 -----------
 

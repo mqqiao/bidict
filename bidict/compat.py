@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 u"""
-Python 2/3 compatibility helpers.
+Compatibility helpers.
 
     .. py:attribute:: PY2
 

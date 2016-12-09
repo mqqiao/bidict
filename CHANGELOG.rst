@@ -6,9 +6,76 @@ Changelog
 Release Notifications
 ---------------------
 
+.. image:: https://img.shields.io/badge/VersionEye-follow-brightgreen.svg
+    :target: https://www.versioneye.com/python/bidict
+    :alt: Follow on VersionEye
+
 `Follow bidict on VersionEye <https://www.versioneye.com/python/bidict>`_
 to automatically be notified via email
 when a new version of bidict is released.
+
+0.13.0 (not yet released)
+-------------------------
+
+- Provide and use the new :class:`bidict.OrderedMapping` base class
+  to allow greater interoperability between classes that extend it.
+
+  It provides a generic, concrete :class:`__eq__ <bidict.OrderedMapping.__eq__>`
+  implementation that performs an order-sensitive comparison when another
+  OrderedMapping is passed in, and an order-insensitive comparison
+  when an unordered Mapping is passed in.
+
+- :class:`BidirectionalMapping <bidict.BidirectionalMapping>` and
+  :class:`OrderedBidirectionalMapping <bidict.OrderedBidirectionalMapping>`
+  have been refactored into abstract base classes which
+  implement :attr:`__subclasshook__`, which
+  :class:`OrderedMapping <bidict.OrderedMapping>` implements too.
+
+  Now classes that implement a conforming set of methods will be considered
+  subclasses automatically.
+
+  See the new :ref:`extending` documentation for examples.
+
+- Add :attr:`_fwd_class <bidict.BidictBase._fwd_class>` and
+  :attr:`_inv_class <bidict.BidictBase._inv_class>` attributes
+  representing the backing :class:`Mapping <collections.abc.Mapping>` types
+  used internally to store the forward and inverse dictionaries, respectively.
+
+  This allows creating custom bidict types with extended functionality
+  simply by overriding these attributes in a subclass.
+
+  See :ref:`extending` for examples.
+
+- Add the
+  :attr:`_isinv <bidict.BidictBase._isinv>`
+  attribute representing whether a bidict is the inverse of another existing
+  bidict. Used to tell whether the meanings of
+  :attr:`_fwd_class <bidict.BidictBase._fwd_class>` and
+  :attr:`_inv_class <bidict.BidictBase._inv_class>` should be swapped
+  when passing a bidict instance into the
+  constructor of a bidict class where they differ.
+
+  See :ref:`extending` for examples.
+
+- Override :attr:`object.__getattribute__` to try looking up the given attr
+  on the :attr:`_fwd <bidict.BidictBase._fwd>` Mapping
+  in the event that it is not found directly on the bidict,
+  before giving up with an :class:`AttributeError`.
+
+  This can be particularly convenient when overriding
+  :attr:`_fwd_class <bidict.BidictBase._fwd_class>`
+  and
+  :attr:`_inv_class <bidict.BidictBase._inv_class>`.
+
+  See :ref:`extending` for examples.
+
+- Pass any parameters passed to :attr:`bidict.bidict.popitem` through to
+  :attr:`_fwd.popitem` for greater extensibility.
+
+  See :ref:`extending` for an example.
+
+- More concise repr strings for empty bidicts.
+
 
 0.12.0 (2016-07-03)
 -------------------
@@ -87,9 +154,9 @@ when a new version of bidict is released.
 - More efficient implementations of
   :func:`pairs() <bidict.util.pairs>`,
   :func:`inverted() <bidict.util.inverted>`, and
-  :func:`bidict.copy() <bidict.BidirectionalMapping.copy>`.
+  :func:`bidict.copy() <bidict.BidictBase.copy>`.
 
-- Implement :func:`bidict.__copy__() <bidict.BidirectionalMapping.__copy__>`
+- Implement :func:`bidict.__copy__() <bidict.BidictBase.__copy__>`
   for use with the :mod:`copy` module.
 
 - Fix issue preventing a client class from inheriting from
@@ -182,7 +249,7 @@ Breaking API Changes
 ^^^^^^^^^^^^^^^^^^^^
 
 - Remove ``bidict.__invert__``, and with it, support for the ``~b`` syntax.
-  Use :attr:`b.inv <bidict.BidirectionalMapping.inv>` instead.
+  Use :attr:`b.inv <bidict.BidictBase.inv>` instead.
   `#19 <https://github.com/jab/bidict/issues/19>`_
 
 - Remove support for the slice syntax.
@@ -190,7 +257,7 @@ Breaking API Changes
   `#19 <https://github.com/jab/bidict/issues/19>`_
 
 - Remove ``bidict.invert``.
-  Use :attr:`b.inv <bidict.BidirectionalMapping.inv>`
+  Use :attr:`b.inv <bidict.BidictBase.inv>`
   rather than inverting a bidict in place.
   `#20 <https://github.com/jab/bidict/issues/20>`_
 

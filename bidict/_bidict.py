@@ -1,10 +1,10 @@
 """Implements :class:`bidict.bidict`, the mutable bidirectional map type."""
 
-from ._common import BidirectionalMapping, OVERWRITE, RAISE, ON_DUP_VAL
+from ._common import BidictBase, OVERWRITE, RAISE, ON_DUP_VAL
 from collections import MutableMapping
 
 
-class bidict(BidirectionalMapping, MutableMapping):
+class bidict(BidictBase, MutableMapping):
     """Mutable bidirectional map type."""
 
     def __delitem__(self, key):
@@ -93,11 +93,11 @@ class bidict(BidirectionalMapping, MutableMapping):
                 return args[0]  # default
             raise
 
-    def popitem(self):
+    def popitem(self, *args, **kw):
         """Like :py:meth:`dict.popitem`, maintaining bidirectionality."""
         if not self._fwd:
             raise KeyError('popitem(): %s is empty' % self.__class__.__name__)
-        key, val = self._fwd.popitem()
+        key, val = self._fwd.popitem(*args, **kw)
         del self._inv[val]
         return key, val
 

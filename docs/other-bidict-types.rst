@@ -39,3 +39,5 @@ the leaf on this side of the tree.
 .. include:: namedbidict.rst.inc
 
 .. include:: polymorphism.rst.inc
+
+.. include:: extending.rst.inc
