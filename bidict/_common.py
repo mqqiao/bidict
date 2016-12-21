@@ -6,7 +6,7 @@ Exception classes and duplication behaviors are provided here too.
 
 from .compat import PY2, iteritems
 from .util import pairs
-from abc import abstractmethod
+from abc import abstractmethod, abstractproperty
 from collections import Mapping
 
 
@@ -21,26 +21,12 @@ def _proxied(methodname, attrname='_fwd', doc=None):
     return proxy
 
 
-# Based on cpython/Lib/_collections_abc.py.
-def _check_methods(C, *methods):
-    mro = C.__mro__
-    for method in methods:
-        for B in mro:
-            if method in B.__dict__:
-                if B.__dict__[method] is None:
-                    return NotImplemented
-                break
-        else:
-            return NotImplemented
-    return True
-
-
 class BidirectionalMapping(Mapping):
     """Abstract base class for bidirectional mappings."""
 
     __slots__ = ()
 
-    @abstractmethod
+    @abstractproperty
     def inv(self):
         """The inverse bidict."""
         return NotImplemented
@@ -49,15 +35,20 @@ class BidirectionalMapping(Mapping):
     def __inverted__(self):
         return NotImplemented
 
-    _subclasshook_methods = {
-        'inv', '__inverted__', 'keys', 'items', 'values', 'get', '__getitem__',
-        '__contains__', '__eq__', '__iter__', '__len__', '__contains__',
-    }
+    _subclsattrs = frozenset({
+        'inv', '__inverted__',
+        # see "Mapping" in the table at
+        # https://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes
+        '__getitem__', '__iter__', '__len__',  # abstract methods
+        '__contains__', 'keys', 'items', 'values', 'get', '__eq__', '__ne__',  # mixin methods
+    })
 
     @classmethod
     def __subclasshook__(cls, C):
         if cls is BidirectionalMapping:
-            return _check_methods(C, *BidirectionalMapping._subclasshook_methods)
+            mro = C.__mro__
+            if any(all(i in B.__dict__ and B.__dict__[i] for i in cls._subclsattrs) for B in mro):
+                return True
         return NotImplemented
 
 
@@ -189,11 +180,11 @@ class BidictBase(BidirectionalMapping):
                 raise e
 
     def __repr__(self):
-        from ._ordered import OrderedMapping
         s = self.__class__.__name__ + '('
         if not self:
             return s + ')'
-        if isinstance(self, OrderedMapping):
+        # not the same as "ordered", but Python doesn't provide an Ordered ABC
+        if hasattr(self, '__reversed__'):
             return s + '[' + ', '.join(repr(i) for i in iteritems(self)) + '])'
         return s + '{' + ', '.join('%r: %r' % i for i in iteritems(self)) + '})'
 

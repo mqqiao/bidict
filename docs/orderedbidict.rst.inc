@@ -40,8 +40,8 @@ The additional methods of :class:`collections.OrderedDict` are supported too::
 
 As with :class:`collections.OrderedDict`,
 equality tests between ordered bidicts are order-sensitive.
-Equality tests between ordered bidicts and order-insensitive
-:class:`collections.abc.Mapping` objects
+Equality tests between ordered bidicts and other
+:class:`collections.abc.Mapping` instances
 are order-insensitive.
 
     >>> ob1 = orderedbidict([('one', 1), ('two', 2)])
@@ -50,6 +50,34 @@ are order-insensitive.
     False
     >>> ob1 == dict(ob2)
     True
+
+Comparing an ordered bidict
+with an instance of another ordered mapping type
+such as OrderedDict
+is order-insensitive::
+
+    >>> from collections import OrderedDict
+    >>> ob1 == OrderedDict(ob2)
+    True
+
+If you'd like to customize this behavior,
+you can override :attr:`bidict.OrderedBidictBase._compare_as_ordered`
+in a subclass::
+
+    >>> class MyOrderedBidict(orderedbidict):
+    ...    @staticmethod
+    ...    def _compare_as_ordered(mapping):
+    ...        return hasattr(mapping, '__reversed__')
+    >>> m = MyOrderedBidict(ob1)
+    >>> m == OrderedDict(ob2)
+    False
+    >>> m != dict(ob2) if PYPY else m == dict(ob2)  # doctest: +SKIP
+    True
+
+Note that with the definition above,
+comparing with a dict will be order-sensitive in PyPy but not in CPython,
+as on PyPy dicts have a `__reversed__` attribute
+while on CPython they don't.
 
 And also as with :class:`collections.OrderedDict`,
 updating an existing item preserves its position in the order

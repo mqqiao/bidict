@@ -17,24 +17,25 @@ when a new version of bidict is released.
 0.13.0 (not yet released)
 -------------------------
 
-- Provide and use the new :class:`bidict.OrderedMapping` base class
-  to allow greater interoperability between classes that extend it.
+- :class:`BidirectionalMapping <bidict.BidirectionalMapping>`
+  has been refactored into an abstract base class as its name suggests,
+  matching the Mapping ABCs in :mod:`collections.abc`.
+  The concrete method implementations it used to provide have been moved
+  into a new :class:`BidictBase <bidict.BidictBase>` subclass.
 
-  It provides a generic, concrete :class:`__eq__ <bidict.OrderedMapping.__eq__>`
-  implementation that performs an order-sensitive comparison when another
-  OrderedMapping is passed in, and an order-insensitive comparison
-  when an unordered Mapping is passed in.
+  :class:`BidirectionalMapping <bidict.BidirectionalMapping>`
+  now also implements :attr:`__subclasshook__`,
+  so any class that provides a conforming set of attributes
+  (enumerated in :attr:`<bidict.BidirectionalMapping._subclassattrs>`)
+  will be considered a
+  :class:`BidirectionalMapping <bidict.BidirectionalMapping>`
+  subclass automatically.
 
-- :class:`BidirectionalMapping <bidict.BidirectionalMapping>` and
-  :class:`OrderedBidirectionalMapping <bidict.OrderedBidirectionalMapping>`
-  have been refactored into abstract base classes which
-  implement :attr:`__subclasshook__`, which
-  :class:`OrderedMapping <bidict.OrderedMapping>` implements too.
-
-  Now classes that implement a conforming set of methods will be considered
-  subclasses automatically.
-
-  See the new :ref:`extending` documentation for examples.
+- :class:`OrderedBidirectionalMapping <bidict.OrderedBidirectionalMapping>`
+  has been renamed to
+  :class:`OrderedBidictBase <bidict.OrderedBidictBase>`,
+  to better reflect its function.
+  (It is not an ABC.)
 
 - Add :attr:`_fwd_class <bidict.BidictBase._fwd_class>` and
   :attr:`_inv_class <bidict.BidictBase._inv_class>` attributes
@@ -44,18 +45,7 @@ when a new version of bidict is released.
   This allows creating custom bidict types with extended functionality
   simply by overriding these attributes in a subclass.
 
-  See :ref:`extending` for examples.
-
-- Add the
-  :attr:`_isinv <bidict.BidictBase._isinv>`
-  attribute representing whether a bidict is the inverse of another existing
-  bidict. Used to tell whether the meanings of
-  :attr:`_fwd_class <bidict.BidictBase._fwd_class>` and
-  :attr:`_inv_class <bidict.BidictBase._inv_class>` should be swapped
-  when passing a bidict instance into the
-  constructor of a bidict class where they differ.
-
-  See :ref:`extending` for examples.
+  See the new :ref:`extending` documentation for examples.
 
 - Override :attr:`object.__getattribute__` to try looking up the given attr
   on the :attr:`_fwd <bidict.BidictBase._fwd>` Mapping

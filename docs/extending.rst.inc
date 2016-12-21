@@ -28,9 +28,10 @@ creating a sorted bidict type is dead simple::
     >>> # and whose inverse items stay sorted by *their* keys (i.e. it and
     >>> # its inverse iterate over their items in different orders):
     >>>
-    >>> class sortedbidict1(bidict.OrderedMapping, bidict.bidict):
+    >>> class sortedbidict1(bidict.bidict):
     ...     _fwd_class = sortedcontainers.SortedDict
     ...     _inv_class = sortedcontainers.SortedDict
+    ...     __reversed__ = lambda self: reversed(self._fwd)
     >>>
     >>> b = sortedbidict1({'Tokyo': 'Japan', 'Cairo': 'Egypt', 'Lima': 'Peru'})
     >>>
@@ -46,9 +47,10 @@ creating a sorted bidict type is dead simple::
     >>>
     >>> import sortedcollections
     >>>
-    >>> class sortedbidict2(bidict.OrderedMapping, bidict.bidict):
+    >>> class sortedbidict2(bidict.bidict):
     ...     _fwd_class = sortedcontainers.SortedDict
     ...     _inv_class = sortedcollections.ValueSortedDict
+    ...     __reversed__ = lambda self: reversed(self._fwd)
     >>>
     >>> elemByAtomicNum = sortedbidict2({1: 'hydrogen', 2: 'helium', 3: 'lithium'})
     >>>
@@ -79,45 +81,3 @@ creating a sorted bidict type is dead simple::
     (1, 'hydrogen')
     >>> elemByAtomicNum.inv.popitem(last=True)
     ('beryllium', 4)
-    >>>
-    >>> # bidict provides an OrderedMapping ABC for interoperability.
-    >>> # Its __eq__ method is order-sensitive when comparing against another
-    >>> # OrderedMapping. If we want our sortedbidicts to have order-sensitive
-    >>> # comparison, we can inherit from OrderedMapping before inheriting
-    >>> # from bidict, so OrderedMapping's __eq__ comes first in the MRO.
-    >>> # Since this is what we did above, the following works:
-    >>> elemByAtomicNum == bidict.orderedbidict([(2, 'helium'), (3, 'lithium')])
-    True
-    >>> elemByAtomicNum != bidict.orderedbidict([(3, 'lithium'), (2, 'helium')])
-    True
-    >>> # comparing against an unordered Mapping is order-insensitive:
-    >>> elemByAtomicNum == {3: 'lithium', 2: 'helium'}
-    True
-    >>> # Since bidict.OrderedMapping implements __subclasshook__, classes like
-    >>> # SortedDict and OrderedDict are detected as subclasses automatically,
-    >>> # and so the following works:
-    >>> issubclass(sortedcontainers.SortedDict, bidict.OrderedMapping)
-    True
-    >>> import collections
-    >>> issubclass(collections.OrderedDict, bidict.OrderedMapping)
-    True
-    >>> elemByAtomicNum == collections.OrderedDict([(2, 'helium'), (3, 'lithium')])
-    True
-    >>> elemByAtomicNum != collections.OrderedDict([(3, 'lithium'), (2, 'helium')])
-    True
-    >>> # If we wanted our sortedbidicts to be automatically picked up as
-    >>> # subclasses of Python 3.6's collections.abc.Reversible, we could
-    >>> # add a __reversed__ class attribute that just proxies the method
-    >>> # call to the _fwd SortedDict:
-    >>> class sortedbidict3(bidict.OrderedMapping, bidict.bidict):
-    ...     _fwd_class = _inv_class = sortedcontainers.SortedDict
-    ...     __reversed__ = lambda self: reversed(self._fwd)
-    >>>
-    >>> # Python 3.6:
-    >>> issubclass(sortedbidict3, collections.Reversible)  # doctest: +SKIP
-    True
-    >>> # bidict also provides an OrderedBidirectionalMapping ABC with a
-    >>> # __subclasshook__, so with the __reversed__ method implying ordering,
-    >>> # the following works automatically too:
-    >>> issubclass(sortedbidict3, bidict.OrderedBidirectionalMapping)
-    True

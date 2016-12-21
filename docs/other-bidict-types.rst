@@ -13,8 +13,9 @@ and the hierarchy they belong to.
 ``bidict`` Class Hierarchy
 --------------------------
 
-.. image:: _static/class-hierarchy.svg
-    :alt: bidict class hierarchy
+.. hide diagram until it's up-to-date
+.. .. image:: _static/class-hierarchy.svg
+..     :alt: bidict class hierarchy
 
 At the top of the bidict type hierarchy is
 :class:`bidict.BidirectionalMapping`.
