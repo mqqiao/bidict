@@ -10,7 +10,7 @@ matrix:
   include:
     - python: "2.7"
       env:
-        - PYENV_PYTHON_VER=2.7.12
+        - PYENV_PYTHON_VER=2.7.13
         - BIDICT_SPHINXBUILD_DISABLE=1
     - python: "3.4"
       env:
