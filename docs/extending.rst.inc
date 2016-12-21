@@ -95,9 +95,6 @@ creating a sorted bidict type is dead simple::
 
     >>> sortedbidict2.__getattribute__ = __getattribute__
 
-    >>> elemByAtomicNum.peekitem(index=0)
-    (1, 'hydrogen')
-    >>> elemByAtomicNum.popitem(last=False)
-    (1, 'hydrogen')
-    >>> elemByAtomicNum.inv.popitem(last=True)
-    ('beryllium', 4)
+    >>> # bidict has no .peekitem attr, so the call is passed through to _fwd:
+    >>> elemByAtomicNum.peekitem()
+    (4, 'beryllium')

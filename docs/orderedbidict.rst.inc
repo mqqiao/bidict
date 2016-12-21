@@ -31,66 +31,24 @@ The additional methods of :class:`collections.OrderedDict` are supported too::
     >>> element_by_symbol['H'] = 'hydrogen'
     >>> element_by_symbol
     orderedbidict([('He', 'helium'), ('Li', 'lithium'), ('H', 'hydrogen')])
-    >>> element_by_symbol.move_to_end('Li')  # works on Python < 3.2 too!
+    >>> element_by_symbol.move_to_end('Li')  # works on Python < 3.2 too
     >>> element_by_symbol
     orderedbidict([('He', 'helium'), ('H', 'hydrogen'), ('Li', 'lithium')])
     >>> element_by_symbol.move_to_end('H', last=False)
     >>> element_by_symbol
     orderedbidict([('H', 'hydrogen'), ('He', 'helium'), ('Li', 'lithium')])
 
-As with :class:`collections.OrderedDict`,
-equality tests between ordered bidicts are order-sensitive.
-Equality tests between ordered bidicts and other
-:class:`collections.abc.Mapping` instances
-are order-insensitive.
+As with :class:`OrderedDict <collections.OrderedDict>`,
+updating an existing item preserves its position in the order,
+while deleting an item and re-adding it moves it to the end::
 
-    >>> ob1 = orderedbidict([('one', 1), ('two', 2)])
-    >>> ob2 = orderedbidict([('two', 2), ('one', 1)])
-    >>> ob1 == ob2
-    False
-    >>> ob1 == dict(ob2)
-    True
-
-Comparing an ordered bidict
-with an instance of another ordered mapping type
-that is not an ordered bidict,
-such as an :class:`collections.OrderedDict`,
-is *order-insensitive*::
-
-    >>> from collections import OrderedDict
-    >>> ob1 == OrderedDict(ob2)
-    True
-
-If you'd like to customize this behavior,
-you can override
-:attr:`bidict.OrderedBidictBase._should_compare_order_sensitive` in a subclass::
-
-    >>> class MyOrderedBidict(orderedbidict):
-    ...    @staticmethod
-    ...    def _should_compare_order_sensitive(mapping):
-    ...        return hasattr(mapping, '__reversed__')
-
-    >>> m = MyOrderedBidict(ob1)
-    >>> m == OrderedDict(ob2)
-    False
-    >>> m != dict(ob2) if PYPY else m == dict(ob2)  # doctest: +SKIP
-    True
-
-Note that with the definition above,
-comparing with a dict will be order-sensitive in PyPy but not in CPython,
-as on PyPy dicts have a `__reversed__` attribute
-while on CPython they don't.
-
-And also as with :class:`collections.OrderedDict`,
-updating an existing item preserves its position in the order
-(whether changing its key or value)::
-
-    >>> ob1['one'] = 3
-    >>> ob1  # order preserved when setting existing key to new value
-    orderedbidict([('one', 3), ('two', 2)])
-    >>> ob1.forceput('three', 3)
-    >>> ob1  # order preserved when setting existing value to new key too
-    orderedbidict([('three', 3), ('two', 2)])
+    >>> element_by_symbol['He'] = 'HELIUM'
+    >>> element_by_symbol
+    orderedbidict([('H', 'hydrogen'), ('He', 'HELIUM'), ('Li', 'lithium')])
+    >>> del element_by_symbol['H']
+    >>> element_by_symbol['H'] = 'hydrogen'
+    >>> element_by_symbol
+    orderedbidict([('He', 'HELIUM'), ('Li', 'lithium'), ('H', 'hydrogen')])
 
 When setting an item whose key duplicates that of an existing item
 and whose value duplicates that of a different existing item,
@@ -107,6 +65,47 @@ will have its value overwritten in place::
     >>> o
     orderedbidict([(3, 4), (5, 2), (7, 8)])
 
+Equality tests between two ordered bidicts are *order-sensitive*.
+Equality tests between an ordered bidict and an instance of some *other*
+:class:`Mapping <collections.abc.Mapping>` type
+(*including even* :class:`OrderedDict <collections.OrderedDict>`)
+are *order-insensitive*.
+
+    >>> o1 = orderedbidict([('one', 1), ('two', 2)])
+    >>> o2 = orderedbidict([('two', 2), ('one', 1)])
+    >>> o1 == o2
+    False
+    >>> o1 == dict(o2)
+    True
+    >>> from collections import OrderedDict
+    >>> o1 == OrderedDict(o2)
+    True
+
+To customize this behavior, you can override
+:attr:`_should_compare_order_sensitive
+<bidict.OrderedBidictBase._should_compare_order_sensitive>`
+in a subclass::
+
+    >>> class MyOrderedBidict(orderedbidict):
+    ...    @staticmethod
+    ...    def _should_compare_order_sensitive(mapping):
+    ...        # Can return False to never do order-sensitive comparison.
+    ...        # To make order-sensitive only if mapping is reversible:
+    ...        return hasattr(mapping, '__reversed__')
+
+    >>> m = MyOrderedBidict(o1)
+    >>> m == OrderedDict(o2)  # OrderedDict is reversible -> order-sensitive
+    False
+    >>> m == dict(o2) if CPYTHON else m != dict(o2)  # doctest: +SKIP
+    True
+
+Note that with the custom ``_should_compare_order_sensitive`` implementation above,
+*comparing with a dict would be order-sensitive in PyPy but not in CPython*.
+This is because on on PyPy,
+dicts have a `__reversed__` attribute,
+whereas on CPython they do not.
+This implementation is therefore not recommended if you might ever require
+consistent behavior across Python implementations.
 
 :class:`orderedbidict <bidict.orderedbidict>` also comes in
 :class:`loose <bidict.looseorderedbidict>` and

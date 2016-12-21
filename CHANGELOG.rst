@@ -26,8 +26,7 @@ when a new version of bidict is released.
   :class:`BidirectionalMapping <bidict.BidirectionalMapping>`
   now also implements ``__subclasshook__``,
   so any class that provides a conforming set of attributes
-  (enumerated in :attr:`BidirectionalMapping._subclsattrs
-  <bidict.BidirectionalMapping._subclsattrs>`)
+  (enumerated in :attr:`_subclsattrs <bidict.BidirectionalMapping._subclsattrs>`)
   will be considered a
   :class:`BidirectionalMapping <bidict.BidirectionalMapping>`
   subclass automatically.
