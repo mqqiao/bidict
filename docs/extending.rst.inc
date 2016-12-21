@@ -23,49 +23,57 @@ attributes,
 creating a sorted bidict type is dead simple::
 
     >>> import bidict, sortedcontainers
-    >>>
+
     >>> # a sorted bidict whose forward items stay sorted by their keys,
     >>> # and whose inverse items stay sorted by *their* keys (i.e. it and
     >>> # its inverse iterate over their items in different orders):
-    >>>
+
     >>> class sortedbidict1(bidict.bidict):
     ...     _fwd_class = sortedcontainers.SortedDict
     ...     _inv_class = sortedcontainers.SortedDict
     ...     __reversed__ = lambda self: reversed(self._fwd)
-    >>>
-    >>> b = sortedbidict1({'Tokyo': 'Japan', 'Cairo': 'Egypt', 'Lima': 'Peru'})
-    >>>
-    >>> list(b.items())  # b stays sorted by its keys
+
+    >>> b = sortedbidict1({'Tokyo': 'Japan', 'Cairo': 'Egypt'})
+    >>> b
+    sortedbidict1([('Cairo', 'Egypt'), ('Tokyo', 'Japan')])
+
+    >>> b['Lima'] = 'Peru'
+
+    >>> # b stays sorted by its keys:
+    >>> list(b.items())
     [('Cairo', 'Egypt'), ('Lima', 'Peru'), ('Tokyo', 'Japan')]
-    >>>
-    >>> list(b.inv.items())  # b.inv stays sorted by *its* keys (b's values!)
+
+    >>> # b.inv stays sorted by *its* keys (b's values!)
+    >>> list(b.inv.items())
     [('Egypt', 'Cairo'), ('Japan', 'Tokyo'), ('Peru', 'Lima')]
-    >>>
+
+
     >>> # a sorted bidict whose forward items stay sorted by their keys,
     >>> # and whose inverse items stay sorted by their values (i.e. it and
     >>> # its inverse iterate over their items in the same order):
-    >>>
+
     >>> import sortedcollections
-    >>>
+
     >>> class sortedbidict2(bidict.bidict):
     ...     _fwd_class = sortedcontainers.SortedDict
     ...     _inv_class = sortedcollections.ValueSortedDict
     ...     __reversed__ = lambda self: reversed(self._fwd)
-    >>>
-    >>> elemByAtomicNum = sortedbidict2({1: 'hydrogen', 2: 'helium', 3: 'lithium'})
-    >>>
-    >>> # forward items sorted by key:
-    >>> list(elemByAtomicNum.items())
-    [(1, 'hydrogen'), (2, 'helium'), (3, 'lithium')]
-    >>>
-    >>> # inverse items sorted by value:
+
+    >>> elemByAtomicNum = sortedbidict2({3: 'lithium', 1: 'hydrogen', 2: 'helium'})
+
+    >>> # stays sorted by key:
+    >>> elemByAtomicNum
+    sortedbidict2([(1, 'hydrogen'), (2, 'helium'), (3, 'lithium')])
+
+    >>> # .inv stays sorted by value:
     >>> list(elemByAtomicNum.inv.items())
     [('hydrogen', 1), ('helium', 2), ('lithium', 3)]
-    >>>
-    >>> elemByAtomicNum.update({4: 'beryllium'})
+
+    >>> elemByAtomicNum[4] = 'beryllium'
+
     >>> list(elemByAtomicNum.inv.items())
     [('hydrogen', 1), ('helium', 2), ('lithium', 3), ('beryllium', 4)]
-    >>>
+
     >>> # order is preserved correctly when passing .inv back into constructor:
     >>> atomicNumByElem = sortedbidict2(elemByAtomicNum.inv)
     >>> list(atomicNumByElem.items()) == list(elemByAtomicNum.inv.items())
@@ -73,8 +81,20 @@ creating a sorted bidict type is dead simple::
     >>> # copies of .inv preserve order correctly too:
     >>> list(elemByAtomicNum.inv.copy().items()) == list(atomicNumByElem.items())
     True
-    >>>
-    >>> # attrs not defined by bidict are passed through to the _fwd SortedDict:
+
+    >>> # To pass method calls through to the _fwd SortedDict when not present
+    >>> # on the bidict instance, provide a custom __getattribute__ method:
+    >>> def __getattribute__(self, name):
+    ...     try:
+    ...         return object.__getattribute__(self, name)
+    ...     except AttributeError as e:
+    ...         try:
+    ...             return getattr(self._fwd, name)
+    ...         except AttributeError:
+    ...             raise e
+
+    >>> sortedbidict2.__getattribute__ = __getattribute__
+
     >>> elemByAtomicNum.peekitem(index=0)
     (1, 'hydrogen')
     >>> elemByAtomicNum.popitem(last=False)

@@ -8,7 +8,7 @@ class bidict(BidictBase, MutableMapping):
     """Mutable bidirectional map type."""
 
     def __delitem__(self, key):
-        """Like :py:meth:`dict.__delitem__`, maintaining bidirectionality."""
+        """Like dict's :attr:`__delitem__`."""
         self._pop(key)
 
     def __setitem__(self, key, val):
@@ -19,7 +19,7 @@ class bidict(BidictBase, MutableMapping):
 
         If *key* is already associated with a different value,
         the old value will be replaced with *val*,
-        as with :py:meth:`dict.__setitem__`.
+        as with dict's :attr:`__setitem__`.
 
         If *val* is already associated with a different key,
         an exception is raised
@@ -82,7 +82,7 @@ class bidict(BidictBase, MutableMapping):
         self._clear()
 
     def pop(self, key, *args):
-        """Like :py:meth:`dict.pop`, maintaining bidirectionality."""
+        """Like :py:meth:`dict.pop`."""
         l = len(args) + 1
         if l > 2:
             raise TypeError('pop expected at most 2 arguments, got %d' % l)
@@ -94,7 +94,7 @@ class bidict(BidictBase, MutableMapping):
             raise
 
     def popitem(self, *args, **kw):
-        """Like :py:meth:`dict.popitem`, maintaining bidirectionality."""
+        """Like :py:meth:`dict.popitem`."""
         if not self._fwd:
             raise KeyError('popitem(): %s is empty' % self.__class__.__name__)
         key, val = self._fwd.popitem(*args, **kw)
@@ -102,7 +102,7 @@ class bidict(BidictBase, MutableMapping):
         return key, val
 
     def setdefault(self, key, default=None):
-        """Like :py:meth:`dict.setdefault`, maintaining bidirectionality."""
+        """Like :py:meth:`dict.setdefault`."""
         if key not in self:
             self[key] = default
         return self[key]

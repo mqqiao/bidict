@@ -18,7 +18,8 @@ from ._bidict import bidict
 from ._loose import loosebidict
 from ._frozen import frozenbidict
 from ._named import namedbidict
-from ._ordered import orderedbidict, frozenorderedbidict, looseorderedbidict
+from ._ordered import (OrderedBidictBase,
+                       orderedbidict, frozenorderedbidict, looseorderedbidict)
 from .util import pairs, inverted
 
 __all__ = (
@@ -35,6 +36,7 @@ __all__ = (
     'bidict',
     'loosebidict',
     'frozenbidict',
+    'OrderedBidictBase',
     'namedbidict',
     'orderedbidict',
     'frozenorderedbidict',

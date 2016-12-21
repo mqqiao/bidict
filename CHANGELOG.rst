@@ -21,19 +21,19 @@ when a new version of bidict is released.
   has been refactored into an abstract base class as its name suggests,
   matching the Mapping ABCs in :mod:`collections.abc`.
   The concrete method implementations it used to provide have been moved
-  into a new :class:`BidictBase <bidict.BidictBase>` subclass.
+  into a new :class:`BidictBase <bidict._common.BidictBase>` subclass.
 
   :class:`BidirectionalMapping <bidict.BidirectionalMapping>`
-  now also implements :attr:`__subclasshook__`,
+  now also implements ``__subclasshook__``,
   so any class that provides a conforming set of attributes
-  (enumerated in :attr:`<bidict.BidirectionalMapping._subclassattrs>`)
+  (enumerated in :attr:`BidirectionalMapping._subclsattrs
+  <bidict.BidirectionalMapping._subclsattrs>`)
   will be considered a
   :class:`BidirectionalMapping <bidict.BidirectionalMapping>`
   subclass automatically.
 
-- :class:`OrderedBidirectionalMapping <bidict.OrderedBidirectionalMapping>`
-  has been renamed to
-  :class:`OrderedBidictBase <bidict.OrderedBidictBase>`,
+- ``OrderedBidirectionalMapping`` has been renamed to
+  :class:`OrderedBidictBase <bidict._ordered.OrderedBidictBase>`,
   to better reflect its function.
   (It is not an ABC.)
 
@@ -47,22 +47,8 @@ when a new version of bidict is released.
 
   See the new :ref:`extending` documentation for examples.
 
-- Override :attr:`object.__getattribute__` to try looking up the given attr
-  on the :attr:`_fwd <bidict.BidictBase._fwd>` Mapping
-  in the event that it is not found directly on the bidict,
-  before giving up with an :class:`AttributeError`.
-
-  This can be particularly convenient when overriding
-  :attr:`_fwd_class <bidict.BidictBase._fwd_class>`
-  and
-  :attr:`_inv_class <bidict.BidictBase._inv_class>`.
-
-  See :ref:`extending` for examples.
-
-- Pass any parameters passed to :attr:`bidict.bidict.popitem` through to
-  :attr:`_fwd.popitem` for greater extensibility.
-
-  See :ref:`extending` for an example.
+- Pass any parameters passed to :attr:`bidict.popitem <bidict.bidict.popitem>`
+  through to ``_fwd.popitem`` for greater extensibility.
 
 - More concise repr strings for empty bidicts.
 
@@ -144,9 +130,9 @@ when a new version of bidict is released.
 - More efficient implementations of
   :func:`pairs() <bidict.util.pairs>`,
   :func:`inverted() <bidict.util.inverted>`, and
-  :func:`bidict.copy() <bidict.BidictBase.copy>`.
+  :func:`bidict.copy() <bidict._common.BidictBase.copy>`.
 
-- Implement :func:`bidict.__copy__() <bidict.BidictBase.__copy__>`
+- Implement :func:`bidict.__copy__() <bidict._common.BidictBase.__copy__>`
   for use with the :mod:`copy` module.
 
 - Fix issue preventing a client class from inheriting from
@@ -239,7 +225,7 @@ Breaking API Changes
 ^^^^^^^^^^^^^^^^^^^^
 
 - Remove ``bidict.__invert__``, and with it, support for the ``~b`` syntax.
-  Use :attr:`b.inv <bidict.BidictBase.inv>` instead.
+  Use :attr:`b.inv <bidict.BidirectionalMapping.inv>` instead.
   `#19 <https://github.com/jab/bidict/issues/19>`_
 
 - Remove support for the slice syntax.
@@ -247,7 +233,7 @@ Breaking API Changes
   `#19 <https://github.com/jab/bidict/issues/19>`_
 
 - Remove ``bidict.invert``.
-  Use :attr:`b.inv <bidict.BidictBase.inv>`
+  Use :attr:`b.inv <bidict.BidirectionalMapping.inv>`
   rather than inverting a bidict in place.
   `#20 <https://github.com/jab/bidict/issues/20>`_
 

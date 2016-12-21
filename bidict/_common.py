@@ -6,7 +6,7 @@ Exception classes and duplication behaviors are provided here too.
 
 from .compat import PY2, iteritems
 from .util import pairs
-from abc import abstractmethod, abstractproperty
+from abc import abstractproperty
 from collections import Mapping
 
 
@@ -17,23 +17,30 @@ def _proxied(methodname, attrname='_fwd', doc=None):
         meth = getattr(attr, methodname)
         return meth(*args)
     proxy.__name__ = methodname
-    proxy.__doc__ = doc or 'Like ``dict.%s()``.' % methodname
+    proxy.__doc__ = doc or "Like dict's ``%s``." % methodname
     return proxy
 
 
 class BidirectionalMapping(Mapping):
-    """Abstract base class for bidirectional mappings."""
+    """Abstract base class for bidirectional mappings.
+
+    .. py:attribute:: _subclsattrs
+
+        The attributes that ``__subclasshook__`` checks for to determine
+        whether a class is a subclass of :class:`BidirectionalMapping`.
+
+    """
 
     __slots__ = ()
 
     @abstractproperty
     def inv(self):
         """The inverse bidict."""
-        return NotImplemented
+        raise NotImplementedError
 
-    @abstractmethod
     def __inverted__(self):
-        return NotImplemented
+        """Get an iterator over the items in :attr:`inv`."""
+        return iteritems(self.inv)
 
     _subclsattrs = frozenset({
         'inv', '__inverted__',
@@ -147,7 +154,7 @@ class BidictBase(BidirectionalMapping):
     _inv_class = dict
 
     def __init__(self, *args, **kw):
-        """Like ``dict.__init__()``, but maintaining bidirectionality."""
+        """Like dict's ``__init__``."""
         self._isinv = getattr(args[0], '_isinv', False) if args else False
         self._fwd = self._inv_class() if self._isinv else self._fwd_class()
         self._inv = self._fwd_class() if self._isinv else self._inv_class()
@@ -170,20 +177,11 @@ class BidictBase(BidirectionalMapping):
         """The inverse bidict."""
         return self.__inv
 
-    def __getattribute__(self, name):
-        try:
-            return object.__getattribute__(self, name)
-        except AttributeError as e:
-            try:
-                return getattr(self._fwd, name)
-            except AttributeError:
-                raise e
-
     def __repr__(self):
         s = self.__class__.__name__ + '('
         if not self:
             return s + ')'
-        # not the same as "ordered", but Python doesn't provide an Ordered ABC
+        # Not the same as "ordered", but Python doesn't provide an Ordered ABC.
         if hasattr(self, '__reversed__'):
             return s + '[' + ', '.join(repr(i) for i in iteritems(self)) + '])'
         return s + '{' + ', '.join('%r: %r' % i for i in iteritems(self)) + '})'
@@ -194,10 +192,6 @@ class BidictBase(BidirectionalMapping):
     def __ne__(self, other):
         # http://stackoverflow.com/a/30676267/161642
         return not self == other
-
-    def __inverted__(self):
-        """Get an iterator over the items in :attr:`self.inv <inv>`."""
-        return iteritems(self.inv)
 
     def _pop(self, key):
         val = self._fwd.pop(key)
@@ -360,7 +354,7 @@ class BidictBase(BidirectionalMapping):
                               doc=dict.itervalues.__doc__)
         viewvalues = _proxied('viewkeys', attrname='inv',
                               doc=values.__doc__.replace('values()', 'viewvalues()'))
-        values.__doc__ = 'Like ``dict.values()``.'
+        values.__doc__ = "Like dict's ``values``."
 
 
 class BidictException(Exception):

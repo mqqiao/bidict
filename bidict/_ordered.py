@@ -13,7 +13,7 @@ _NXT = 2
 _END = _marker('END')
 
 
-def _make_iter(reverse=False, name='__iter__', doctmpl='Like :meth:`collections.OrderedDict.%s`.'):
+def _make_iter(reverse=False, name='__iter__', doc=None):
     def _iter(self):
         fwd = self._fwd
         end = self._end
@@ -25,15 +25,15 @@ def _make_iter(reverse=False, name='__iter__', doctmpl='Like :meth:`collections.
             yield korv if node is cur else d[korv]
             cur = prv if reverse else nxt
     _iter.__name__ = name
-    _iter.__doc__ = (doctmpl % name) if '%s' in doctmpl else ''
+    _iter.__doc__ = doc or "Like OrderedDict's ``%s``." % name
     return _iter
 
 
 class OrderedBidictBase(BidirectionalMapping):
-    """Base class for orderedbidict."""
+    """Base class for :class:`orderedbidict` and :class:`frozenorderedbidict`."""
 
     def __init__(self, *args, **kw):
-        """Base impl. You probably want :func:`orderedbidict.__init__` instead."""
+        """Like OrderedDict's ``__init__``."""
         self._isinv = getattr(args[0], '_isinv', False) if args else False
         self._end = []  # circular doubly-linked list of [{key: val, val: key}, prv, nxt] nodes
         self._init_end()
@@ -178,12 +178,17 @@ class OrderedBidictBase(BidirectionalMapping):
             return NotImplemented
         if len(self) != len(other):
             return False
-        if self._compare_as_ordered(other):
+        if self._should_compare_order_sensitive(other):
             return all(i == j for (i, j) in izip(iteritems(self), iteritems(other)))
         return all(self.get(k, _missing) == v for (k, v) in iteritems(other))
 
     @staticmethod
-    def _compare_as_ordered(mapping):
+    def _should_compare_order_sensitive(mapping):
+        """Whether we should compare order-sensitively to ``mapping``.
+
+        Returns True iff ``isinstance(mapping, OrderedBidictBase)``.
+        Override this in a subclass to customize this behavior.
+        """
         return isinstance(mapping, OrderedBidictBase)
 
     if PY2:  # pragma: no cover

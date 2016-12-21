@@ -53,21 +53,23 @@ are order-insensitive.
 
 Comparing an ordered bidict
 with an instance of another ordered mapping type
-such as OrderedDict
-is order-insensitive::
+that is not an ordered bidict,
+such as an :class:`collections.OrderedDict`,
+is *order-insensitive*::
 
     >>> from collections import OrderedDict
     >>> ob1 == OrderedDict(ob2)
     True
 
 If you'd like to customize this behavior,
-you can override :attr:`bidict.OrderedBidictBase._compare_as_ordered`
-in a subclass::
+you can override
+:attr:`bidict.OrderedBidictBase._should_compare_order_sensitive` in a subclass::
 
     >>> class MyOrderedBidict(orderedbidict):
     ...    @staticmethod
-    ...    def _compare_as_ordered(mapping):
+    ...    def _should_compare_order_sensitive(mapping):
     ...        return hasattr(mapping, '__reversed__')
+
     >>> m = MyOrderedBidict(ob1)
     >>> m == OrderedDict(ob2)
     False
