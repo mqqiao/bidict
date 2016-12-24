@@ -36,9 +36,10 @@ Status
     :target: https://coveralls.io/github/jab/bidict
     :alt: Test coverage
 
-.. image:: https://img.shields.io/pypi/pyversions/bidict.svg
-    :target: https://pypi.python.org/pypi/bidict
-    :alt: Supported Python versions
+.. People who don't assume Python 2.7 and 3.3+ are supported can check Travis
+.. .. image:: https://img.shields.io/pypi/pyversions/bidict.svg
+..     :target: https://pypi.python.org/pypi/bidict
+..     :alt: Supported Python versions
 
 .. image:: https://img.shields.io/pypi/implementation/bidict.svg
     :target: https://pypi.python.org/pypi/bidict

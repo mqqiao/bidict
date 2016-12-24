@@ -58,9 +58,15 @@ Making Changes
   If you're adding a feature, include accompanying tests and documentation
   demonstrating its correctness and usage.
 
-- Run all the tests
-  with `tox <https://tox.readthedocs.io>`_
-  to make sure nothing else was accidentally broken.
+- Run the tests locally with `tox <https://tox.readthedocs.io>`_
+  to make sure they pass for all supported Python versions
+  (see ``envlist`` in ``tox.ini`` for the complete list).
+  If you do not have all the referenced Python versions available locally,
+  you can also push the changes on your branch to GitHub
+  to automatically trigger a new `Travis-CI <https://travis-ci.org>`_ build,
+  which should run the tests for all supported Python versions.
+  You should be able to see the results at ``travis-ci.org/<user>/bidict``,
+  where ``<user>`` is the GitHub username you used to fork bidict.
 
 - Create a concise but comprehensive commit message in the following style::
 

@@ -181,8 +181,11 @@ class BidictBase(BidirectionalMapping):
         s = self.__class__.__name__ + '('
         if not self:
             return s + ')'
-        # Not the same as "ordered", but Python doesn't provide an Ordered ABC.
-        if hasattr(self, '__reversed__'):
+        # If we have a truthy __reversed__ attribute, use an ordered repr.
+        # (Python doesn't provide an Ordered or OrderedMapping ABC.)
+        # (Can't just use hasattr(self, '__reversed__') since Python 3.6 sets
+        # Mapping.__reversed__ = None, which we want to count as non-ordered.)
+        if getattr(self, '__reversed__', None):
             return s + '[' + ', '.join(repr(i) for i in iteritems(self)) + '])'
         return s + '{' + ', '.join('%r: %r' % i for i in iteritems(self)) + '})'
 
