@@ -54,8 +54,7 @@ class BidirectionalMapping(Mapping):
     def __subclasshook__(cls, C):
         if cls is BidirectionalMapping:
             mro = C.__mro__
-            if any(all(i in B.__dict__ and B.__dict__[i] for i in cls._subclsattrs) for B in mro):
-                return True
+            return all(any(B.__dict__.get(i) for B in mro) for i in cls._subclsattrs)
         return NotImplemented
 
 
