@@ -1,5 +1,5 @@
-``orderedbidict``
------------------
+:class:`orderedbidict <bidict.orderedbidict>`
+---------------------------------------------
 
 For those times when your one-to-one mapping must also support
 remembering the order in which items were inserted

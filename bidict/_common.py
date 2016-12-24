@@ -52,6 +52,7 @@ class BidirectionalMapping(Mapping):
 
     @classmethod
     def __subclasshook__(cls, C):
+        """Make classes with a conforming API a subclass automatically."""
         if cls is BidirectionalMapping:
             mro = C.__mro__
             return all(any(B.__dict__.get(i) for B in mro) for i in cls._subclsattrs)
