@@ -1,21 +1,31 @@
 """Implements :class:`bidict.frozenbidict`."""
 
-from .compat import viewitems
-from ._common import BidictBase, _missing
-from collections import Hashable
+from .compat import viewitems, iteritems
+from ._common import BidictBase
+from ._ordered import OrderedBidictBase
+from functools import reduce
 
 
-class frozenbidict(BidictBase, Hashable):
+class frozenbidict(BidictBase):
     """Immutable, hashable bidict type."""
 
     def __hash__(self):
-        """Return the hash of this bidict."""
-        h = getattr(self, '_hash', _missing)
-        if h is not _missing:
-            return h
-        itemsview = viewitems(self)
-        if hasattr(itemsview, '_hash'):  # e.g. collections.ItemsView._hash
-            h = self._hash = itemsview._hash()
-        else:
-            h = self._hash = hash(tuple(itemsview))
-        return h
+        """Return the hash of this frozenbidict."""
+        if hasattr(self, '_hashval'):  # Computed lazily.
+            return self._hashval
+        # Use the _hash() implementation that our ItemsView provides (via collections.Set).
+        self._hashval = hv = viewitems(self)._hash()
+        return hv
+
+
+class frozenorderedbidict(OrderedBidictBase):
+    """Immutable, hashable ordered bidict type."""
+
+    def __hash__(self):
+        """Return the hash of this frozenorderedbidict."""
+        if hasattr(self, '_hashval'):  # Computed lazily.
+            return self._hashval
+        self._hashval = reduce(lambda h, i: hash((h, i)),
+                               iteritems(self),
+                               hash(self.__class__))
+        return self._hashval

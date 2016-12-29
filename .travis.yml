@@ -48,7 +48,7 @@ install:
   - test -z "$BIDICT_COVERAGE_ENABLE" || travis_retry pip install coveralls
 
 script:
-  - test -z "$BIDICT_BUILD_DOCS_INSTEAD" && ./test.sh || ./build-docs.sh
+  - if [[ -n "$BIDICT_BUILD_DOCS_INSTEAD" ]]; then ./build-docs.sh; else ./test.sh; fi
 
 cache:
   directories:
